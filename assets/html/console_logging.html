@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console Logging Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px; background: #f5f5f5; color: #333;
+        }
+        h2 { margin-bottom: 8px; color: #1a1a2e; }
+        .subtitle { color: #666; margin-bottom: 20px; font-size: 14px; }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .btn {
+            padding: 12px 18px; border: none; border-radius: 8px;
+            font-size: 14px; cursor: pointer; color: white; font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        .btn:active { opacity: 0.7; }
+        .btn-blue { background: #2196F3; }
+        .btn-orange { background: #FF9800; }
+        .btn-red { background: #F44336; }
+        .btn-green { background: #4CAF50; }
+        .btn-purple { background: #9C27B0; }
+        .btn-teal { background: #009688; }
+        .section { margin-bottom: 20px; }
+        .section-title { font-size: 13px; color: #999; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 8px; }
+        #output {
+            margin-top: 16px; padding: 12px; background: white;
+            border-radius: 8px; min-height: 60px; font-family: monospace;
+            font-size: 13px; white-space: pre-wrap; border: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <h2>Console Logging Demo</h2>
+    <p class="subtitle">Open DevTools Console tab to see output</p>
+
+    <div class="section">
+        <div class="section-title">Log Levels</div>
+        <div class="btn-group">
+            <button class="btn btn-blue" onclick="logMessage()">Log Message</button>
+            <button class="btn btn-orange" onclick="logWarning()">Warning</button>
+            <button class="btn btn-red" onclick="logError()">Error</button>
+            <button class="btn btn-green" onclick="logInfo()">Info</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Advanced</div>
+        <div class="btn-group">
+            <button class="btn btn-purple" onclick="logObject()">Log Object</button>
+            <button class="btn btn-teal" onclick="logTable()">Log Table</button>
+            <button class="btn btn-blue" onclick="logGrouped()">Grouped Logs</button>
+            <button class="btn btn-orange" onclick="logTrace()">Stack Trace</button>
+            <button class="btn btn-green" onclick="logCount()">Count Clicks</button>
+            <button class="btn btn-red" onclick="logTime()">Time Operation</button>
+        </div>
+    </div>
+
+    <div id="output">Waiting for actions...</div>
+
+    <script>
+        const output = document.getElementById('output');
+        function appendOutput(msg) {
+            output.textContent += '\n' + msg;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function logMessage() {
+            console.log('Hello from WebView! This is a standard log message.');
+            appendOutput('[LOG] Standard message logged');
+        }
+
+        function logWarning() {
+            console.warn('Warning: This operation may be slow for large datasets.');
+            appendOutput('[WARN] Warning logged');
+        }
+
+        function logError() {
+            console.error('Error: Failed to connect to the authentication service.');
+            appendOutput('[ERROR] Error logged');
+        }
+
+        function logInfo() {
+            console.info('Info: User session started at ' + new Date().toLocaleTimeString());
+            appendOutput('[INFO] Info logged');
+        }
+
+        function logObject() {
+            const user = {
+                id: 42,
+                name: 'Jane Developer',
+                email: 'jane@example.com',
+                roles: ['admin', 'editor'],
+                preferences: {
+                    theme: 'dark',
+                    language: 'en',
+                    notifications: true
+                }
+            };
+            console.log('User object:', user);
+            console.dir(user);
+            appendOutput('[OBJECT] Complex object logged - expand it in Console');
+        }
+
+        function logTable() {
+            const data = [
+                { name: 'Alice', role: 'Engineer', level: 'Senior' },
+                { name: 'Bob', role: 'Designer', level: 'Mid' },
+                { name: 'Charlie', role: 'PM', level: 'Lead' },
+                { name: 'Diana', role: 'Engineer', level: 'Junior' }
+            ];
+            console.table(data);
+            appendOutput('[TABLE] Table data logged - check the formatted table in Console');
+        }
+
+        function logGrouped() {
+            console.group('API Request Lifecycle');
+            console.log('1. Request initiated: GET /api/users');
+            console.log('2. Headers set: Authorization, Content-Type');
+            console.group('Response Details');
+            console.log('Status: 200 OK');
+            console.log('Duration: 145ms');
+            console.log('Size: 2.3KB');
+            console.groupEnd();
+            console.log('3. Response parsed successfully');
+            console.groupEnd();
+            appendOutput('[GROUP] Grouped logs created - expand/collapse in Console');
+        }
+
+        function logTrace() {
+            function innerFunction() {
+                function deeperFunction() {
+                    console.trace('Trace: How did we get here?');
+                }
+                deeperFunction();
+            }
+            innerFunction();
+            appendOutput('[TRACE] Stack trace logged');
+        }
+
+        function logCount() {
+            console.count('Button Clicks');
+            appendOutput('[COUNT] Count incremented - watch it increase in Console');
+        }
+
+        function logTime() {
+            console.time('Heavy Operation');
+            let sum = 0;
+            for (let i = 0; i < 1000000; i++) { sum += Math.sqrt(i); }
+            console.timeEnd('Heavy Operation');
+            appendOutput('[TIME] Operation timed - check duration in Console');
+        }
+
+        // Auto-logging heartbeat
+        let heartbeat = 0;
+        setInterval(() => {
+            heartbeat++;
+            console.log('[Heartbeat #' + heartbeat + '] WebView is alive at ' + new Date().toLocaleTimeString());
+        }, 5000);
+
+        console.log('%c WebView Debug Demo ', 'background: #2196F3; color: white; padding: 4px 8px; border-radius: 4px; font-size: 14px;');
+        console.log('Console Logging demo loaded. Try the buttons above!');
+    </script>
+</body>
+</html>

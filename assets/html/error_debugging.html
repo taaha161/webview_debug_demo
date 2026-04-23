@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Debugging Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px; background: #f5f5f5; color: #333;
+        }
+        h2 { margin-bottom: 8px; color: #1a1a2e; }
+        .subtitle { color: #666; margin-bottom: 20px; font-size: 14px; }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .btn {
+            padding: 12px 18px; border: none; border-radius: 8px;
+            font-size: 14px; cursor: pointer; color: white; font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        .btn:active { opacity: 0.7; }
+        .btn-red { background: #F44336; }
+        .btn-orange { background: #FF9800; }
+        .btn-purple { background: #9C27B0; }
+        .btn-teal { background: #009688; }
+        .btn-blue { background: #2196F3; }
+        .btn-green { background: #4CAF50; }
+        .section { margin-bottom: 20px; }
+        .section-title { font-size: 13px; color: #999; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 8px; }
+        .hint {
+            background: #fce4ec; border-radius: 8px; padding: 12px;
+            font-size: 13px; margin-bottom: 16px; color: #c62828;
+            border-left: 4px solid #F44336;
+        }
+        #error-log {
+            margin-top: 16px; padding: 12px; background: #1a1a2e;
+            border-radius: 8px; min-height: 100px; font-family: monospace;
+            font-size: 12px; white-space: pre-wrap; color: #ff6b6b;
+            max-height: 300px; overflow-y: auto;
+        }
+        .error-entry { margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px solid #2a2a3e; }
+        .error-type { color: #ff9800; }
+        .error-msg { color: #ff6b6b; }
+        .error-time { color: #666; }
+    </style>
+</head>
+<body>
+    <h2>Error Debugging Demo</h2>
+    <p class="subtitle">Open DevTools Console to see errors and stack traces</p>
+
+    <div class="hint">
+        Tip: Enable "Pause on exceptions" in Sources tab to automatically
+        break when errors are thrown.
+    </div>
+
+    <div class="section">
+        <div class="section-title">Uncaught Errors</div>
+        <div class="btn-group">
+            <button class="btn btn-red" onclick="throwReferenceError()">ReferenceError</button>
+            <button class="btn btn-orange" onclick="throwTypeError()">TypeError</button>
+            <button class="btn btn-purple" onclick="throwSyntaxError()">SyntaxError</button>
+            <button class="btn btn-teal" onclick="throwRangeError()">RangeError</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Custom & Async Errors</div>
+        <div class="btn-group">
+            <button class="btn btn-red" onclick="throwCustomError()">Custom Error</button>
+            <button class="btn btn-orange" onclick="throwPromiseRejection()">Promise Rejection</button>
+            <button class="btn btn-purple" onclick="throwNetworkError()">Network Error</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Error Handling</div>
+        <div class="btn-group">
+            <button class="btn btn-green" onclick="caughtError()">Caught Error (try/catch)</button>
+            <button class="btn btn-blue" onclick="caughtPromise()">Caught Promise (.catch)</button>
+            <button class="btn btn-teal" onclick="errorChain()">Error Chain</button>
+        </div>
+    </div>
+
+    <div id="error-log"><span style="color: #888;">Error log (also check DevTools Console)...</span></div>
+
+    <script>
+        const errorLog = document.getElementById('error-log');
+        let errorCount = 0;
+
+        function logError(type, message, caught) {
+            errorCount++;
+            const time = new Date().toLocaleTimeString();
+            const prefix = caught ? '[CAUGHT]' : '[UNCAUGHT]';
+            const color = caught ? '#4CAF50' : '#ff6b6b';
+            errorLog.innerHTML += '<div class="error-entry">'
+                + '<span class="error-time">' + time + '</span> '
+                + '<span style="color:' + color + '">' + prefix + '</span> '
+                + '<span class="error-type">' + type + '</span>: '
+                + '<span class="error-msg">' + message + '</span>'
+                + '</div>';
+            errorLog.scrollTop = errorLog.scrollHeight;
+        }
+
+        window.onerror = function(msg, source, line, col, error) {
+            logError(error ? error.name : 'Error', msg, false);
+            return false;
+        };
+
+        window.onunhandledrejection = function(event) {
+            logError('UnhandledRejection', String(event.reason), false);
+        };
+
+        function throwReferenceError() {
+            console.log(undefinedVariable);
+        }
+
+        function throwTypeError() {
+            const obj = null;
+            obj.toString();
+        }
+
+        function throwSyntaxError() {
+            eval('function {');
+        }
+
+        function throwRangeError() {
+            const arr = new Array(-1);
+        }
+
+        function throwCustomError() {
+            class ApplicationError extends Error {
+                constructor(message, code) {
+                    super(message);
+                    this.name = 'ApplicationError';
+                    this.code = code;
+                    this.timestamp = new Date().toISOString();
+                }
+            }
+            throw new ApplicationError('User session expired', 'AUTH_001');
+        }
+
+        function throwPromiseRejection() {
+            Promise.reject(new Error('Async operation failed: timeout after 30s'));
+        }
+
+        async function throwNetworkError() {
+            logError('NetworkError', 'Attempting fetch to invalid URL...', false);
+            await fetch('https://does-not-exist.invalid/api');
+        }
+
+        function caughtError() {
+            try {
+                const data = JSON.parse('{ invalid json }');
+            } catch (error) {
+                console.error('Caught error:', error);
+                logError(error.name, error.message, true);
+            }
+        }
+
+        function caughtPromise() {
+            fetch('https://does-not-exist.invalid/api')
+                .then(res => res.json())
+                .catch(error => {
+                    console.error('Caught promise error:', error);
+                    logError('PromiseError', error.message, true);
+                });
+        }
+
+        function errorChain() {
+            function level3() {
+                throw new Error('Something broke deep in the call stack');
+            }
+            function level2() {
+                try {
+                    level3();
+                } catch (e) {
+                    throw new Error('level2 failed: ' + e.message);
+                }
+            }
+            function level1() {
+                try {
+                    level2();
+                } catch (e) {
+                    console.error('Error chain caught at level1:', e);
+                    logError('ChainedError', e.message, true);
+                    console.log('Full stack trace above - check the chain in DevTools');
+                }
+            }
+            level1();
+        }
+
+        console.log('Error Debugging demo loaded.');
+        console.log('Enable "Pause on exceptions" in Sources for the best experience.');
+    </script>
+</body>
+</html>

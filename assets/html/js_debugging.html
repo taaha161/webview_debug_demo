@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Debugging Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px; background: #f5f5f5; color: #333;
+        }
+        h2 { margin-bottom: 8px; color: #1a1a2e; }
+        .subtitle { color: #666; margin-bottom: 20px; font-size: 14px; }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .btn {
+            padding: 12px 18px; border: none; border-radius: 8px;
+            font-size: 14px; cursor: pointer; color: white; font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        .btn:active { opacity: 0.7; }
+        .btn-blue { background: #2196F3; }
+        .btn-orange { background: #FF9800; }
+        .btn-red { background: #F44336; }
+        .btn-green { background: #4CAF50; }
+        .btn-purple { background: #9C27B0; }
+        .btn-teal { background: #009688; }
+        .section { margin-bottom: 20px; }
+        .section-title { font-size: 13px; color: #999; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 8px; }
+        #output {
+            margin-top: 16px; padding: 12px; background: white;
+            border-radius: 8px; min-height: 100px; font-family: monospace;
+            font-size: 12px; white-space: pre-wrap; border: 1px solid #e0e0e0;
+            max-height: 300px; overflow-y: auto;
+        }
+        .hint {
+            background: #e3f2fd; border-radius: 8px; padding: 12px;
+            font-size: 13px; margin-bottom: 16px; color: #1565c0;
+            border-left: 4px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <h2>JavaScript Debugging Demo</h2>
+    <p class="subtitle">Open DevTools Sources tab to set breakpoints</p>
+
+    <div class="hint">
+        Tip: In Sources tab, find this page, click line numbers to set breakpoints,
+        then press the buttons below to hit them.
+    </div>
+
+    <div class="section">
+        <div class="section-title">Data Pipeline</div>
+        <div class="btn-group">
+            <button class="btn btn-blue" onclick="runPipeline()">Run Data Pipeline</button>
+            <button class="btn btn-green" onclick="runStepByStep()">Step-by-Step</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Algorithms</div>
+        <div class="btn-group">
+            <button class="btn btn-purple" onclick="runFibonacci()">Fibonacci(10)</button>
+            <button class="btn btn-teal" onclick="runSort()">Sort Array</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Debugger</div>
+        <div class="btn-group">
+            <button class="btn btn-red" onclick="triggerDebugger()">Hit debugger;</button>
+            <button class="btn btn-orange" onclick="runClosure()">Closure Demo</button>
+        </div>
+    </div>
+
+    <div id="output">Waiting for actions...</div>
+
+    <script>
+        const output = document.getElementById('output');
+        function log(msg) {
+            output.textContent += '\n' + msg;
+            output.scrollTop = output.scrollHeight;
+            console.log(msg);
+        }
+
+        // ========================================
+        // DATA PIPELINE - Set breakpoints in each function
+        // ========================================
+
+        function fetchData() {
+            // BREAKPOINT HERE: inspect the raw data
+            const rawData = [
+                { id: 1, name: 'Widget A', price: 29.99, category: 'electronics', inStock: true },
+                { id: 2, name: 'Widget B', price: 49.99, category: 'electronics', inStock: false },
+                { id: 3, name: 'Gadget C', price: 15.00, category: 'accessories', inStock: true },
+                { id: 4, name: 'Gadget D', price: 99.99, category: 'electronics', inStock: true },
+                { id: 5, name: 'Tool E',   price: 5.99,  category: 'tools',       inStock: true },
+                { id: 6, name: 'Tool F',   price: 12.50, category: 'tools',       inStock: false }
+            ];
+            return rawData;
+        }
+
+        function transformData(data) {
+            // BREAKPOINT HERE: watch the transformation
+            const transformed = data.map(item => ({
+                ...item,
+                displayName: item.name.toUpperCase(),
+                priceFormatted: '$' + item.price.toFixed(2),
+                available: item.inStock ? 'Yes' : 'No'
+            }));
+            return transformed;
+        }
+
+        function filterData(data) {
+            // BREAKPOINT HERE: see what gets filtered
+            const filtered = data.filter(item => {
+                const isInStock = item.inStock === true;
+                const isAffordable = item.price < 50;
+                return isInStock && isAffordable;
+            });
+            return filtered;
+        }
+
+        function renderResults(data) {
+            // BREAKPOINT HERE: inspect final output
+            const summary = data.map(d => d.displayName + ' (' + d.priceFormatted + ')');
+            const result = 'Results: ' + summary.join(', ');
+            return result;
+        }
+
+        function runPipeline() {
+            log('--- Running Data Pipeline ---');
+            const raw = fetchData();
+            log('Step 1: Fetched ' + raw.length + ' items');
+
+            const transformed = transformData(raw);
+            log('Step 2: Transformed ' + transformed.length + ' items');
+
+            const filtered = filterData(transformed);
+            log('Step 3: Filtered to ' + filtered.length + ' items');
+
+            const result = renderResults(filtered);
+            log('Step 4: ' + result);
+            log('--- Pipeline Complete ---');
+        }
+
+        async function runStepByStep() {
+            log('--- Step-by-Step Mode ---');
+            log('Step 1: Fetching...');
+            const raw = fetchData();
+            log('  Got ' + raw.length + ' items. Pausing...');
+            await new Promise(r => setTimeout(r, 1000));
+
+            log('Step 2: Transforming...');
+            const transformed = transformData(raw);
+            log('  Transformed. Pausing...');
+            await new Promise(r => setTimeout(r, 1000));
+
+            log('Step 3: Filtering...');
+            const filtered = filterData(transformed);
+            log('  Filtered to ' + filtered.length + '. Pausing...');
+            await new Promise(r => setTimeout(r, 1000));
+
+            log('Step 4: Rendering...');
+            const result = renderResults(filtered);
+            log('  ' + result);
+            log('--- Done ---');
+        }
+
+        // ========================================
+        // FIBONACCI - Great for call stack inspection
+        // ========================================
+
+        function fibonacci(n) {
+            // BREAKPOINT HERE: watch recursive calls in the Call Stack
+            if (n <= 1) return n;
+            const a = fibonacci(n - 1);
+            const b = fibonacci(n - 2);
+            return a + b;
+        }
+
+        function runFibonacci() {
+            log('--- Fibonacci(10) ---');
+            log('Set a breakpoint inside fibonacci() to see the call stack');
+            const result = fibonacci(10);
+            log('fibonacci(10) = ' + result);
+        }
+
+        // ========================================
+        // SORT - Step through a bubble sort
+        // ========================================
+
+        function bubbleSort(arr) {
+            const a = [...arr];
+            const n = a.length;
+            for (let i = 0; i < n - 1; i++) {
+                for (let j = 0; j < n - i - 1; j++) {
+                    // BREAKPOINT HERE: watch i, j, and the array change
+                    if (a[j] > a[j + 1]) {
+                        const temp = a[j];
+                        a[j] = a[j + 1];
+                        a[j + 1] = temp;
+                    }
+                }
+            }
+            return a;
+        }
+
+        function runSort() {
+            const input = [64, 34, 25, 12, 22, 11, 90];
+            log('--- Bubble Sort ---');
+            log('Input:  [' + input.join(', ') + ']');
+            const sorted = bubbleSort(input);
+            log('Output: [' + sorted.join(', ') + ']');
+        }
+
+        // ========================================
+        // DEBUGGER STATEMENT
+        // ========================================
+
+        function triggerDebugger() {
+            const secret = 'You found the hidden value!';
+            const counter = 42;
+            const data = { message: secret, count: counter };
+            log('About to hit debugger; statement...');
+            debugger;  // Execution pauses here when DevTools is open
+            log('Resumed after debugger. Inspect "data" variable in Scope panel.');
+        }
+
+        // ========================================
+        // CLOSURE DEMO - inspect scope chain
+        // ========================================
+
+        function createCounter(name) {
+            let count = 0;
+            const createdAt = new Date().toLocaleTimeString();
+
+            return {
+                increment() {
+                    count++;
+                    // BREAKPOINT HERE: inspect closure variables in Scope panel
+                    log(name + ' counter: ' + count + ' (created at ' + createdAt + ')');
+                },
+                getCount() {
+                    return count;
+                }
+            };
+        }
+
+        let myCounter = null;
+        function runClosure() {
+            if (!myCounter) {
+                myCounter = createCounter('Demo');
+                log('--- Closure created. Set breakpoint in increment(), then click again ---');
+            }
+            myCounter.increment();
+        }
+
+        console.log('JS Debugging demo loaded.');
+        console.log('Set breakpoints in the Sources tab, then use the buttons.');
+    </script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Inspection Demo</title>
+    <style>
+        :root {
+            --primary: #2196F3;
+            --secondary: #FF9800;
+            --accent: #9C27B0;
+            --bg: #f5f5f5;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --text-light: #888888;
+            --radius: 12px;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 16px; background: var(--bg); color: var(--text);
+        }
+        h2 { margin-bottom: 4px; color: #1a1a2e; }
+        .subtitle { color: #666; margin-bottom: 16px; font-size: 14px; }
+        .profile-card {
+            background: var(--card-bg); border-radius: var(--radius);
+            box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .avatar {
+            width: 64px; height: 64px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 24px; font-weight: bold; flex-shrink: 0;
+        }
+        .profile-info h3 { font-size: 18px; margin-bottom: 4px; }
+        .profile-info .email { color: var(--text-light); font-size: 14px; }
+        .profile-info .role {
+            display: inline-block; margin-top: 6px; padding: 3px 10px;
+            background: var(--primary); color: white; border-radius: 12px;
+            font-size: 12px; font-weight: 500;
+        }
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 12px; margin-bottom: 16px;
+        }
+        .stat-card {
+            background: var(--card-bg); border-radius: var(--radius);
+            box-shadow: var(--shadow); padding: 16px; text-align: center;
+        }
+        .stat-value { font-size: 28px; font-weight: 700; color: var(--primary); }
+        .stat-label { font-size: 11px; color: var(--text-light); text-transform: uppercase;
+            letter-spacing: 1px; margin-top: 4px; }
+        .table-card {
+            background: var(--card-bg); border-radius: var(--radius);
+            box-shadow: var(--shadow); overflow: hidden; margin-bottom: 16px;
+        }
+        .table-header { padding: 14px 16px; font-weight: 600; font-size: 15px;
+            border-bottom: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 10px 16px; font-size: 11px;
+            text-transform: uppercase; color: var(--text-light);
+            letter-spacing: 1px; border-bottom: 1px solid #eee; }
+        td { padding: 10px 16px; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+        tr:last-child td { border-bottom: none; }
+        .status-badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+        .status-active { background: #e8f5e9; color: #2e7d32; }
+        .status-pending { background: #fff3e0; color: #ef6c00; }
+        .status-inactive { background: #fce4ec; color: #c62828; }
+        .form-card {
+            background: var(--card-bg); border-radius: var(--radius);
+            box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px;
+        }
+        .form-card h3 { margin-bottom: 12px; font-size: 15px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 12px; color: var(--text-light);
+            margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px 12px; border: 1px solid #ddd;
+            border-radius: 8px; font-size: 14px; outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; }
+        .checkbox-group input { width: auto; }
+        .pulse-container { text-align: center; margin-bottom: 16px; }
+        .pulse-dot {
+            width: 20px; height: 20px; border-radius: 50%;
+            background: var(--accent); display: inline-block;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(156,39,176,0.4); }
+            50% { transform: scale(1.4); opacity: 0.8; box-shadow: 0 0 20px 10px rgba(156,39,176,0); }
+        }
+        .pulse-label { font-size: 12px; color: var(--text-light); margin-top: 6px; }
+        .nested-demo {
+            background: var(--card-bg); border-radius: var(--radius);
+            box-shadow: var(--shadow); padding: 16px;
+        }
+        .nested-demo h3 { margin-bottom: 8px; font-size: 15px; }
+        .nest-level {
+            border-left: 3px solid; padding: 8px 12px; margin: 6px 0;
+            border-radius: 0 8px 8px 0; font-size: 13px;
+        }
+        .nest-1 { border-color: var(--primary); background: rgba(33,150,243,0.05); }
+        .nest-2 { border-color: var(--secondary); background: rgba(255,152,0,0.05); }
+        .nest-3 { border-color: var(--accent); background: rgba(156,39,176,0.05); }
+    </style>
+</head>
+<body>
+    <h2>DOM Inspection Demo</h2>
+    <p class="subtitle">Open DevTools Elements tab to inspect and live-edit</p>
+
+    <div class="profile-card" id="profile">
+        <div class="avatar">JD</div>
+        <div class="profile-info">
+            <h3>Jane Developer</h3>
+            <div class="email">jane@example.com</div>
+            <span class="role">Senior Engineer</span>
+        </div>
+    </div>
+
+    <div class="stats-grid" id="stats">
+        <div class="stat-card">
+            <div class="stat-value">128</div>
+            <div class="stat-label">Commits</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">42</div>
+            <div class="stat-label">PRs Merged</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">97%</div>
+            <div class="stat-label">Tests Pass</div>
+        </div>
+    </div>
+
+    <div class="pulse-container">
+        <div class="pulse-dot" id="pulse"></div>
+        <div class="pulse-label">CSS Animation - inspect to see keyframes</div>
+    </div>
+
+    <div class="table-card" id="data-table">
+        <div class="table-header">Team Members</div>
+        <table>
+            <thead>
+                <tr><th>Name</th><th>Role</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Alice Chen</td><td>Frontend</td><td><span class="status-badge status-active">Active</span></td></tr>
+                <tr><td>Bob Smith</td><td>Backend</td><td><span class="status-badge status-active">Active</span></td></tr>
+                <tr><td>Carol Wu</td><td>DevOps</td><td><span class="status-badge status-pending">On Leave</span></td></tr>
+                <tr><td>Dave Kim</td><td>Design</td><td><span class="status-badge status-inactive">Offline</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="form-card" id="settings-form">
+        <h3>Settings Form</h3>
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" value="jane_dev" />
+        </div>
+        <div class="form-group">
+            <label for="theme-select">Theme</label>
+            <select id="theme-select">
+                <option value="light" selected>Light</option>
+                <option value="dark">Dark</option>
+                <option value="auto">Auto</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <div class="checkbox-group">
+                <input type="checkbox" id="notifications" checked />
+                <label for="notifications" style="margin: 0; text-transform: none;">Enable notifications</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="nested-demo" id="nested">
+        <h3>Nested DOM Structure</h3>
+        <div class="nest-level nest-1" data-depth="1">
+            Level 1 - Container
+            <div class="nest-level nest-2" data-depth="2">
+                Level 2 - Section
+                <div class="nest-level nest-3" data-depth="3">
+                    Level 3 - Content (try editing this text in Elements tab!)
+                </div>
+            </div>
+            <div class="nest-level nest-2" data-depth="2">
+                Level 2 - Another Section
+                <div class="nest-level nest-3" data-depth="3">
+                    Level 3 - Try changing CSS variables in :root!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('DOM Inspection demo loaded.');
+        console.log('Tips:');
+        console.log('  1. Right-click any element and choose "Inspect"');
+        console.log('  2. Edit CSS variables on :root (--primary, --accent, etc.)');
+        console.log('  3. Toggle the animation on .pulse-dot');
+        console.log('  4. Edit text directly in the Elements panel');
+        console.log('  5. Check the box model for .profile-card');
+    </script>
+</body>
+</html>
